@@ -94,12 +94,12 @@ my @allowed_checks = (
 
 # II. Usage/Help
 my $p = Nagios::Plugin->new(
-    usage => "Usage: %s 
+    usage => "Usage: %s
        [ -q|--query=These are mapped to specific fs_cli -x checks
                     e.g. show-calls-count is mapped to 'show calls count'
        [ -w|--warning=threshold that generates a Nagios warning ]
        [ -c|--critical=threshold that generates a Nagios critical warning ]
-       [ -f|--perfdatatitle=title for Nagios Performance Data. 
+       [ -f|--perfdatatitle=title for Nagios Performance Data.
                             Note: don't use spaces. ]
 
        See the documentation in this script's comments for accepted queries.
@@ -108,7 +108,7 @@ my $p = Nagios::Plugin->new(
     version => $VERSION,
     blurb   => "This plugin requires the FreeSWITCH fs_cli command to perform checks.",
     extra   => qq(
-    An example query:   
+    An example query:
     ./check_freeswitch_health.pl -q show-calls-count -w 100 -c 150 -f Total_Calls
     ),
     license =>
@@ -121,7 +121,7 @@ $p->add_arg(
     spec     => 'query|q=s',
     required => 1,
     help     => "-q, --query=STRING
-    What check to run. E.g. show-calls-count, sofia-status-internal, etc. 
+    What check to run. E.g. show-calls-count, sofia-status-internal, etc.
     REQUIRED."
 );
 
@@ -165,7 +165,13 @@ given ( $query ) {
 
     # Perform a 'show calls count'
     when ( "show-calls-count" ) {
-        @fs_cli_output = `$fs_cli_location -x "show calls count"`;
+        eval {
+            @fs_cli_output = `$fs_cli_location -x "show calls count"`;
+        } or do {
+            $rawdata = "Unable to connect FreeSwitch";
+            $result = -1;
+            last;
+        };
         foreach ( @fs_cli_output ) {
             if ( /total/i ) {
                 my @temp = split( /\s+/, $_ );
@@ -177,7 +183,13 @@ given ( $query ) {
     }
 
     when ( "sofia-status-internal" ) {
-        @fs_cli_output = `$fs_cli_location -x "sofia status"`;
+        eval {
+            @fs_cli_output = `$fs_cli_location -x "sofia status"`;
+        } or do {
+            $rawdata = "Unable to connect FreeSwitch";
+            $result = -1;
+            last;
+        };
         $subquery      = 'internal';
         foreach ( @fs_cli_output ) {
             if ( /internal/i ) {
@@ -199,7 +211,13 @@ given ( $query ) {
     }
 
     when ( "sofia-status-external" ) {
-        @fs_cli_output = `$fs_cli_location -x "sofia status"`;
+        eval {
+            @fs_cli_output = `$fs_cli_location -x "sofia status"`;
+        } or do {
+            $rawdata = "Unable to connect FreeSwitch";
+            $result = -1;
+            last;
+        };
         $subquery      = 'external';
         foreach ( @fs_cli_output ) {
             if ( /external/i ) {
@@ -221,7 +239,13 @@ given ( $query ) {
     }
 
     when ( "sofia-status-profile-internal-failed-calls-in" ) {
-        @fs_cli_output = `$fs_cli_location -x "sofia status profile internal"`;
+        eval {
+            @fs_cli_output = `$fs_cli_location -x "sofia status profile internal"`;
+        } or do {
+            $rawdata = "Unable to connect FreeSwitch";
+            $result = -1;
+            last;
+        };
         $subquery      = 'failed-calls-in';
         foreach ( @fs_cli_output ) {
             if ( /failed-calls-in/i ) {
@@ -233,7 +257,13 @@ given ( $query ) {
     }
 
     when ( "sofia-status-profile-internal-failed-calls-out" ) {
-        @fs_cli_output = `$fs_cli_location -x "sofia status profile internal"`;
+        eval {
+            @fs_cli_output = `$fs_cli_location -x "sofia status profile internal"`;
+        } or do {
+            $rawdata = "Unable to connect FreeSwitch";
+            $result = -1;
+            last;
+        };
         $subquery      = 'failed-calls-out';
         foreach ( @fs_cli_output ) {
             if ( /failed-calls-out/i ) {
@@ -245,7 +275,13 @@ given ( $query ) {
     }
 
     when ( "show-registrations-count" ) {
-        @fs_cli_output = `$fs_cli_location -x "show registrations"`;
+        eval {
+            @fs_cli_output = `$fs_cli_location -x "show registrations"`;
+        } or do {
+            $rawdata = "Unable to connect FreeSwitch";
+            $result = -1;
+            last;
+        };
         foreach ( @fs_cli_output ) {
             if ( /total/i ) {
                 my @temp = split( /\s+/, $_ );
